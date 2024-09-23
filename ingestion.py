@@ -1,17 +1,17 @@
 import io
 import json
 import os
-import re
 import requests
 import sqlalchemy
-import zipfile
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+
+from blob import upload_matches_zip, read_file
 
 # Load environment variables
 load_dotenv()
@@ -53,19 +53,20 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def insert_file_data(self, json_path):        
-        with open(json_path, 'r') as file:
-            match_data = json.loads(file.read())
-            match_id = os.path.basename(json_path).split('.')[0]
-            try:
-                with self.session_scope() as session:
-                    session.execute(text('''
-                        INSERT INTO raw_match_info (match_id, match_data, deliveries)
-                        VALUES (:match_id, :match_data, :deliveries)
-                    '''), {'match_id': match_id, 'match_data': json.dumps(match_data['info']), 'deliveries': json.dumps(match_data['innings'])})
-            except IntegrityError:
-                print(f"Match with ID {match_id} already exists in the database.")
-                return
+    def insert_file_data(self, json_path):
+        match_data = read_file(json_path)
+        match_id = os.path.basename(json_path).split('.')[0]
+        print(f"Processing match {match_id}")
+        try:
+            with self.session_scope() as session:
+                session.execute(text('''
+                    INSERT INTO raw_match_info (match_id, match_data, deliveries)
+                VALUES (:match_id, :match_data, :deliveries)
+            '''),
+            {'match_id': match_id, 'match_data': json.dumps(match_data['info']), 'deliveries': json.dumps(match_data['innings'])})
+        except IntegrityError:
+            print(f"Match with ID {match_id} already exists in the database.")
+            return
         
 class MatchDataManager:
     """Handles downloading and loading match data files."""
@@ -76,27 +77,33 @@ class MatchDataManager:
     def download_and_extract_matches(self, matches_url):
         response = requests.get(matches_url)
         zip_file = io.BytesIO(response.content)
-        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-            for info in zip_ref.infolist():
-                filename = info.filename
-                if re.search(r'json$', filename):
-                    zip_ref.extract(info, self.matches_dir)
+        uploaded_file_urls = upload_matches_zip(zip_file)
+        return uploaded_file_urls
 
-    def load_files_to_db(self):
-        files = os.listdir(self.matches_dir)
+    def load_files_to_db(self, file_urls):
+        file_urls = file_urls[:2]
+
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(self.db_manager.insert_file_data, os.path.join(self.matches_dir, file)) for file in files]
-            for future in futures:
-                future.result()
+            batch_size = 10  # Adjust this value based on your needs
+            for i in range(0, len(file_urls), batch_size):
+                batch = file_urls[i:i+batch_size]
+                futures = [executor.submit(self.db_manager.insert_file_data, file) for file in batch]
+                for future in as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as e:
+                        print(f"Error processing file: {e}")
 
 def main(url):
     if url:
         db_manager = DatabaseManager(DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
-        match_data_manager = MatchDataManager(db_manager)
+        # match_data_manager = MatchDataManager(db_manager)
 
-        # Download matches and process data
-        match_data_manager.download_and_extract_matches(url)
-        match_data_manager.load_files_to_db()
+        # # Download matches and process data
+        # file_urls = match_data_manager.download_and_extract_matches(url)
+        # match_data_manager.load_files_to_db(file_urls)
+
+        db_manager.insert_file_data('https://unheoqy7ylzzj6ao.public.blob.vercel-storage.com/data/1227593.json')
 
         return {
             'statusCode': 200,
@@ -107,3 +114,6 @@ def main(url):
             'statusCode': 400,
             'body': 'URL not provided.'
         }
+
+if __name__ == '__main__':
+    main('https://cricsheet.org/downloads/bwt_male_json.zip')
