@@ -4,6 +4,10 @@ from ingestion import main
 
 app = FastAPI()
 
+@app.get("/")
+async def root():
+    return {"Status": "OK"}
+
 @app.post("/add-data")
 async def add_data(request: Request):
     data = await request.json()
