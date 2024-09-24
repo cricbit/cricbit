@@ -54,6 +54,10 @@ class DatabaseManager:
 
     async def insert_file_data(self, json_path):
         match_data = await read_file(json_path)
+        if match_data is None:
+            print(f"Failed to read match data from {json_path}")
+            return
+
         match_id = os.path.basename(json_path).split('.')[0]
 
         print(f"Processing match {match_id}")
@@ -103,7 +107,3 @@ async def main(url):
             'statusCode': 400,
             'body': 'URL not provided.'
         }
-
-if __name__ == "__main__":
-    url = "https://cricsheet.org/downloads/recently_played_2_male_json.zip"
-    asyncio.run(main(url))

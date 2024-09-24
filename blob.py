@@ -49,6 +49,10 @@ def upload_matches_zip(zip_path: str) -> list:
 
 async def read_file(file_url):
     async with aiohttp.ClientSession() as session:
-        async with session.get(file_url) as response:
-            match_data = await response.json()
-            return match_data
+        try:
+            async with session.get(file_url) as response:
+                match_data = await response.json()
+                return match_data
+        except Exception as e:
+            print(f"Error reading file {file_url}: {e}")
+            return None
