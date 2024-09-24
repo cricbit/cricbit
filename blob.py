@@ -24,7 +24,8 @@ def put(pathname: str, body: str) -> dict:
         "access": "public",
         "authorization": f"Bearer {BLOB_READ_WRITE_TOKEN}",
         "x-api-version": "4",
-        "x-add-random-suffix": "false"
+        "x-add-random-suffix": "false",
+        "x-cache-control-max-age": "86400"
     }
     _resp = requests.put(f"{VERCEL_API_URL}/{pathname}", data=body, headers=headers)
     return _resp.json()
