@@ -1,7 +1,8 @@
+import aiohttp
 import os
+import re
 import requests
 import zipfile
-import re
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -40,17 +41,14 @@ def upload_matches_zip(zip_path: str) -> list:
             filename = future_to_filename[future]
             try:
                 result = future.result()
-                uploaded_file_urls.append(result)
+                uploaded_file_urls.append(result['url'])
             except Exception as exc:
                 print(f'{filename} generated an exception: {exc}')
 
     return uploaded_file_urls
 
-def read_file(file_url: str) -> str:
-    headers = {
-        "access": "public",
-        "authorization": f"Bearer {BLOB_READ_WRITE_TOKEN}",
-        "x-api-version": "4",
-    }
-    _resp = requests.get(f"{file_url}", headers=headers)
-    return _resp.json()
+async def read_file(file_url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(file_url) as response:
+            match_data = await response.json()
+            return match_data
