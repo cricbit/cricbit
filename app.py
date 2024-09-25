@@ -10,13 +10,16 @@ async def root():
 
 @app.post("/add-data")
 async def add_data(request: Request, background_tasks: BackgroundTasks):
-    data = await request.json()
-    url = data.get('url')
-    if url:
-        background_tasks.add_task(main, url)
-        return {"message": "Data ingestion started in the background"}
-    else:
-        return {"message": "No URL provided"}
+    try:
+        data = await request.json()
+        url = data.get('url')
+        if url:
+            background_tasks.add_task(main, url)
+            return {"message": "Data ingestion started in the background"}
+        else:
+            return {"message": "No URL provided"}
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     uvicorn.run(app)

@@ -6,14 +6,13 @@ import requests
 
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from domains.base import Base
 from domains.raw_matches import RawMatch
-from domains.match_details import MatchInfo
+from domains.match_details import MatchDetails
 
 from blob import upload_matches_zip, read_file
 
@@ -70,6 +69,9 @@ class DatabaseManager:
                 print(f"Match with ID {match_id} inserted successfully.")
         except IntegrityError:
             print(f"Match with ID {match_id} already exists in the database.")
+            return
+        except Exception as e:
+            print(f"Error inserting match {match_id}: {e}")
             return
 
 class MatchDataManager:
