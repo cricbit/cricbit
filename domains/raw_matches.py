@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, JSON, DateTime
+from sqlalchemy import Column, Integer, JSON, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -57,7 +57,7 @@ class RawDBTMatch(Base):
     For more details, please visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
     """
 
-    match_id = Column(Integer, primary_key=True)
+    match_id = Column(Integer, ForeignKey('dbt.raw_base_matches.match_id'), primary_key=True)
     match_data = Column(JSON)
     deliveries = Column(JSON)
     created_at = Column(DateTime, default=lambda: datetime.now())

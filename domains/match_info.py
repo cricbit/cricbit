@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, JSON, String
+from sqlalchemy import Column, Integer, JSON, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -26,7 +26,7 @@ class MatchInfo(Base):
     For more details, please visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
     """
 
-    match_id = Column(Integer, primary_key=True, description="Unique identifier for each match")
+    match_id = Column(Integer, ForeignKey('dbt.raw_matches.match_id'), primary_key=True, description="Unique identifier for each match, foreign key to raw_matches")
     series_name = Column(String, description="Name of the series or tournament")
     match_num = Column(Integer, description="Match number within the series")
     match_stage = Column(String, description="Stage of the match (e.g., group, knockout)")
