@@ -108,7 +108,3 @@ async def main(url):
             'statusCode': 400,
             'body': 'URL not provided.'
         }
-
-if __name__ == "__main__":
-    url = "https://cricsheet.org/downloads/2002_male_json.zip"
-    asyncio.run(main(url))
