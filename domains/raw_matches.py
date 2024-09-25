@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, JSON, DateTime
+from sqlalchemy import Column, Integer, DateTime
+from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
 
 from domains.base import Base
@@ -23,8 +24,8 @@ class RawMatch(Base):
     """
 
     match_id = Column(Integer, primary_key=True)
-    match_data = Column(JSON)
-    deliveries = Column(JSON)
+    match_data = Column(JSONB)
+    deliveries = Column(JSONB)
     created_at = Column(DateTime, default=lambda: datetime.now())
 
     def __init__(self, match_id, match_data, deliveries):
