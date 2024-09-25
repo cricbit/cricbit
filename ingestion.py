@@ -6,10 +6,15 @@ import requests
 
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from domains.raw_matches import Base, RawDBaseMatch
+from sqlalchemy.orm import sessionmaker
+
+from domains.base import Base
+from domains.raw_matches import RawMatch
+from domains.match_details import MatchInfo
+
 from blob import upload_matches_zip, read_file
 
 # Load environment variables
@@ -30,7 +35,7 @@ class DatabaseManager:
 
     async def init_db(self):
         async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(lambda ctx: Base.metadata.create_all(ctx, checkfirst=True))
             await conn.commit()
 
     @asynccontextmanager
@@ -56,7 +61,7 @@ class DatabaseManager:
         print(f"Processing match {match_id}")
         try:
             async with self.async_session_scope() as session:
-                session.add(RawDBaseMatch(
+                session.add(RawMatch(
                     match_id=int(match_id),
                     match_data=json.dumps(match_data['info']),
                     deliveries=json.dumps(match_data['innings'])
@@ -84,7 +89,6 @@ class MatchDataManager:
         tasks = [self.db_manager.insert_file_data(file_url) for file_url in file_urls]
         await asyncio.gather(*tasks)
 
-
 async def main(url):
     if url:
         db_manager = DatabaseManager(DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
@@ -104,3 +108,7 @@ async def main(url):
             'statusCode': 400,
             'body': 'URL not provided.'
         }
+
+if __name__ == "__main__":
+    url = "https://cricsheet.org/downloads/2002_male_json.zip"
+    asyncio.run(main(url))

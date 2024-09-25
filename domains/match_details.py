@@ -1,14 +1,8 @@
 from sqlalchemy import Column, Integer, JSON, String, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
+from domains.base import Base
 
-Base = declarative_base()
-
-
-# this table is to be created in the dbt schema 
-
-class MatchInfo(Base):
-    __tablename__ = 'match_info'
-    __table_args__ = {'schema': 'dbt'}
+class MatchDetails(Base):
+    __tablename__ = 'match_details'
     __license__ = """
     This data is provided under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) license.
 
@@ -26,28 +20,28 @@ class MatchInfo(Base):
     For more details, please visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
     """
 
-    match_id = Column(Integer, ForeignKey('dbt.raw_matches.match_id'), primary_key=True, description="Unique identifier for each match, foreign key to raw_matches")
-    series_name = Column(String, description="Name of the series or tournament")
-    match_num = Column(Integer, description="Match number within the series")
-    match_stage = Column(String, description="Stage of the match (e.g., group, knockout)")
-    match_type = Column(String, description="Type of match (e.g., T20, ODI, Test)")
-    match_type_num = Column(Integer, description="Number associated with the match type")
-    team_type = Column(String, description="Type of teams playing (e.g., international, club)")
-    format = Column(String, description="Format of the match")
-    season = Column(Integer, description="Season in which the match was played")
-    player_of_match = Column(String, description="Player of the match")
-    match_dates = Column(JSON, description="Dates and times of the match")
-    num_days = Column(Integer, description="Number of days the match lasted")
-    venue = Column(String, description="Venue of the match")
-    toss_winner = Column(String, description="Team that won the toss")
-    toss_decision = Column(String, description="Decision made by the toss winner")
-    outcome = Column(String, description="Outcome of the match")
-    team1 = Column(String, description="First team playing in the match")
-    team2 = Column(String, description="Second team playing in the match")
-    winner = Column(String, description="Team that won the match")
-    win_by_wickets = Column(Integer, description="Wickets by which the winning team won")
-    win_by_runs = Column(Integer, description="Runs by which the winning team won")
-    win_by_innings = Column(Integer, description="Innings by which the winning team won")
+    match_id = Column(Integer, ForeignKey('raw_matches.match_id'), primary_key=True)
+    series_name = Column(String)
+    match_num = Column(Integer)
+    match_stage = Column(String)
+    match_type = Column(String)
+    match_type_num = Column(Integer)
+    team_type = Column(String)
+    format = Column(String)
+    season = Column(Integer)
+    player_of_match = Column(String)
+    match_dates = Column(JSON)
+    num_days = Column(Integer)
+    venue = Column(String)
+    toss_winner = Column(String)
+    toss_decision = Column(String)
+    outcome = Column(String)
+    team1 = Column(String)
+    team2 = Column(String)
+    winner = Column(String)
+    win_by_wickets = Column(Integer)
+    win_by_runs = Column(Integer)
+    win_by_innings = Column(Integer)
 
     def __init__(self, match_id, series_name, match_num, match_stage, match_type, match_type_num, team_type, format, season, player_of_match, match_dates, num_days, venue, toss_winner, toss_decision, outcome, team1, team2, winner, win_by_wickets, win_by_runs, win_by_innings):
         self.match_id = match_id
