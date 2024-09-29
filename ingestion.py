@@ -13,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from domains.base import Base
 from domains.raw_matches import RawMatch
 from domains.match_details import MatchDetails
+from domains.playing_xi import PlayingXI
 
 from blob import upload_matches_zip, read_file
 
@@ -110,3 +111,7 @@ async def main(url):
             'statusCode': 400,
             'body': 'URL not provided.'
         }
+
+if __name__ == "__main__":
+    url = "https://cricsheet.org/downloads/2001_male_json.zip"
+    asyncio.run(main(url))
