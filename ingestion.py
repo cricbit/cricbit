@@ -62,8 +62,8 @@ class DatabaseManager:
             async with self.async_session_scope() as session:
                 session.add(RawMatch(
                     match_id=int(match_id),
-                    match_data=json.dumps(match_data['info']),
-                    deliveries=json.dumps(match_data['innings'])
+                    match_data=match_data['info'],
+                    deliveries=match_data['innings']
                 ))
                 await session.flush() 
                 print(f"Match with ID {match_id} inserted successfully.")
