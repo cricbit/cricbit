@@ -2,11 +2,17 @@ import uvicorn
 from fastapi import FastAPI, Request
 
 import file_service
+from redis_resource import get_redis
+
 app = FastAPI()
+
 
 @app.get("/")
 async def root():
-    return {"Status": "OK"}
+    return {
+        "status": 200,
+        "total_matches": get_redis('total_matches'),
+    }
 
 @app.post("/extract-files")
 async def extract_files(request: Request):

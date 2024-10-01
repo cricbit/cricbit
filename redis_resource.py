@@ -12,8 +12,10 @@ redis = Redis(
 )
 
 def set_redis(key, value):
-    redis.set(key, json.dumps(value))
+    redis.setex(key, 60*60*24, value)
 
 def get_redis(key):
     return json.loads(redis.get(key))
 
+def increment_redis(key, increment_value):
+    redis.incrby(key, increment_value)
