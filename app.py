@@ -1,23 +1,23 @@
 import uvicorn
-from fastapi import FastAPI, Request, BackgroundTasks
-from ingestion import main
+from fastapi import FastAPI, Request
 
+import file_service
 app = FastAPI()
 
 @app.get("/")
 async def root():
     return {"Status": "OK"}
 
-@app.post("/add-data")
-async def add_data(request: Request, background_tasks: BackgroundTasks):
+@app.post("/extract-files")
+async def extract_files(request: Request):
     try:
         data = await request.json()
         url = data.get('url')
     except Exception as e:
         return {"error": str(e)}
     if url:
-        background_tasks.add_task(main, url)
-        return {"message": "Data ingestion started in the background"}
+        file_urls = await file_service.extract_files(url)
+        return file_urls
     else:
         return {"error": "No URL provided"}
 

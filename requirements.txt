@@ -6,3 +6,4 @@ SQLAlchemy==2.0.29
 requests==2.31.0
 aiohttp==3.9.5
 asyncpg==0.29.0
+upstash-redis==2.1.0
