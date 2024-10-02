@@ -22,17 +22,18 @@ def zip_to_json_files(zip_path: str) -> dict:
 
 def upload_matches_zip(zip_path: str) -> list:
     json_files = zip_to_json_files(zip_path)
-    uploaded_file_urls = []
 
     with ThreadPoolExecutor() as executor:
         futures = [executor.submit(set_redis, filename.split('.')[0], json.loads(content)) 
                    for filename, content in json_files.items()]
-        uploaded_file_urls = [filename for filename in json_files.keys()]
-        increment_redis('total_matches', len(json_files))
+        
+        match_ids = [filename.split('.')[0] for filename in json_files.keys()]
+        increment_redis('total_matches', len(match_ids))
+        
         for future in as_completed(futures):
             try:
                 future.result()
             except Exception as exc:
                 print(f'An error occurred: {exc}')
     
-    return uploaded_file_urls
+    return match_ids

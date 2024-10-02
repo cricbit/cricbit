@@ -14,12 +14,12 @@ class MatchDataManager:
     def download_and_extract_matches(self, matches_url):
         response = requests.get(matches_url)
         zip_file = io.BytesIO(response.content)
-        uploaded_file_urls = upload_matches_zip(zip_file)
-        return uploaded_file_urls
+        match_ids = upload_matches_zip(zip_file)
+        return match_ids
 
 async def extract_files(url):
     match_data_manager = MatchDataManager()
 
-    file_urls = match_data_manager.download_and_extract_matches(url)
+    match_ids = match_data_manager.download_and_extract_matches(url)
 
-    return file_urls
+    return match_ids
