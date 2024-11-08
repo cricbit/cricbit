@@ -30,6 +30,17 @@ async def extract_files(request: Request):
     if url:
         match_ids = await file_service.extract_files(url)
 
+        try:
+            qstash_client.message.enqueue_json(
+                queue='processing_queue',
+                url='https://cricbit-hub.vercel.app/insert-matches',
+                body={
+                    'match_id': match_ids
+                }
+            )
+        except Exception as e:
+            return {"error": str(e)}
+
         return {
             "status": "ok",
             "extracted_files": len(match_ids),
@@ -50,6 +61,13 @@ async def insert_match(request: Request):
         return {"status": "ok"}
     else:
         return {"error": "No match_id provided"}
+
+@app.post("/insert-matches")
+async def insert_matches(request: Request):
+    data = await request.json()
+    match_ids = data.get('match_ids')
+    await asyncio.gather(*(db_service.insert_match(match_id) for match_id in match_ids))
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     uvicorn.run(app)
