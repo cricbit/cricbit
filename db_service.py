@@ -5,7 +5,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from domains.base import Base
+
 from domains.raw_matches import RawMatch
+from domains.match_details import MatchDetails
+from domains.playing_xi import PlayingXI
 
 DB_HOST = os.environ['POSTGRES_HOST']
 DB_NAME = os.environ['POSTGRES_DATABASE']
