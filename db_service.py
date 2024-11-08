@@ -7,10 +7,10 @@ from sqlalchemy.orm import sessionmaker
 from domains.base import Base
 from domains.raw_matches import RawMatch
 
-DB_HOST = os.environ['HOSTNAME']
-DB_NAME = os.environ['DATABASE']
-DB_USER = os.environ['USER']
-DB_PASSWORD = os.environ['PASSWORD']
+DB_HOST = os.environ['POSTGRES_HOST']
+DB_NAME = os.environ['POSTGRES_DATABASE']
+DB_USER = os.environ['POSTGRES_USER']
+DB_PASSWORD = os.environ['POSTGRES_PASSWORD']
 
 class DatabaseManager:
     """Handles all database-related operations."""
@@ -61,4 +61,5 @@ class DatabaseManager:
 
 async def insert_match(match_id):
     db_manager = DatabaseManager(DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
+    await db_manager.initialize()
     await db_manager.insert_file_data(match_id)

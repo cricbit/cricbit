@@ -17,7 +17,7 @@ qstash_client = QStash(os.getenv("QSTASH_TOKEN"))
 async def root():
     return {
         "status": 200,
-        "total_matches": get_redis('total_matches'),
+        "total_matches": 0
     }
 
 @app.post("/extract-files")

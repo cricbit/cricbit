@@ -5,10 +5,7 @@ import zipfile
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from redis_resource import set_redis, increment_redis
-
-BLOB_READ_WRITE_TOKEN = os.environ['BLOB_READ_WRITE_TOKEN']
-VERCEL_API_URL = "https://blob.vercel-storage.com"
+from redis_resource import set_redis
 
 def zip_to_json_files(zip_path: str) -> dict:
     result = {}
@@ -28,7 +25,6 @@ def upload_matches_zip(zip_path: str) -> list:
                    for filename, content in json_files.items()]
         
         match_ids = [filename.split('.')[0] for filename in json_files.keys()]
-        increment_redis('total_matches', len(match_ids))
         
         for future in as_completed(futures):
             try:
