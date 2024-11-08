@@ -43,8 +43,7 @@ async def extract_files(request: Request):
 
         return {
             "status": "ok",
-            "extracted_files": len(match_ids),
-            "queued_tasks": len(match_ids)
+            "total_matches": len(match_ids)
         }
     else:
         return {"error": "No URL provided"}
