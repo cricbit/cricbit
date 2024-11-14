@@ -65,8 +65,11 @@ async def insert_match(request: Request):
 async def insert_matches(request: Request):
     data = await request.json()
     match_ids = data.get('match_ids')
-    await asyncio.gather(*(db_service.insert_match(match_id) for match_id in match_ids))
-    return {"status": "ok"}
+    if match_ids and len(match_ids) > 0:
+        await asyncio.gather(*(db_service.insert_match(match_id) for match_id in match_ids))
+        return {"status": "ok"}
+    else:
+        return {"error": "No match_ids provided"}
 
 if __name__ == "__main__":
     uvicorn.run(app)
