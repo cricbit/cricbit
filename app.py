@@ -6,7 +6,6 @@ import os
 
 import db_service
 import file_service
-from redis_resource import get_redis
 
 app = FastAPI()
 

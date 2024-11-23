@@ -12,7 +12,7 @@ redis = Redis(
 )
 
 def set_redis(key, value):
-    redis.setex(key, 60*60*24, value)
+    redis.setex(key, 60*60, value)
 
 def get_redis(key):
     return json.loads(redis.get(key))
