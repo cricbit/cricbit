@@ -12,6 +12,8 @@ app = FastAPI()
 # Initialize Qstash client
 qstash_client = QStash(os.getenv("QSTASH_TOKEN"))
 
+BASE_URL = os.getenv("BASE_URL") or "localhost:8000"
+
 @app.get("/")
 async def root():
     return {
@@ -32,7 +34,7 @@ async def extract_files(request: Request):
         try:
             qstash_client.message.enqueue_json(
                 queue='processing_queue',
-                url='https://cricbit-hub.onrender.com/insert-matches',
+                url=f'{BASE_URL}/insert-matches',
                 body={
                     'match_ids': match_ids
                 }
