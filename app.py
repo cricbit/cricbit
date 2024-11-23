@@ -12,7 +12,7 @@ app = FastAPI()
 # Initialize Qstash client
 qstash_client = QStash(os.getenv("QSTASH_TOKEN"))
 
-BASE_URL = os.getenv("BASE_URL") or "localhost:8000"
+BASE_URL = os.getenv("BASE_URL")
 
 @app.get("/")
 async def root():
@@ -30,6 +30,8 @@ async def extract_files(request: Request):
         return {"error": str(e)}
     if url:
         match_ids = await file_service.extract_files(url)
+
+        print(f'{BASE_URL}/insert-matches')
 
         try:
             qstash_client.message.enqueue_json(
