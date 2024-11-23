@@ -32,9 +32,9 @@ async def extract_files(request: Request):
         try:
             qstash_client.message.enqueue_json(
                 queue='processing_queue',
-                url='https://cricbit-hub.vercel.app/insert-matches',
+                url='https://cricbit-hub.onrender.com/insert-matches',
                 body={
-                    'match_id': match_ids
+                    'match_ids': match_ids
                 }
             )
         except Exception as e:
