@@ -14,11 +14,12 @@ DB_HOST = os.environ['POSTGRES_HOST']
 DB_NAME = os.environ['POSTGRES_DATABASE']
 DB_USER = os.environ['POSTGRES_USER']
 DB_PASSWORD = os.environ['POSTGRES_PASSWORD']
+DB_PORT = os.environ['POSTGRES_PORT']
 
 class DatabaseManager:
     """Handles all database-related operations."""
-    def __init__(self, user, password, host, dbname):
-        self.engine = create_async_engine(f"postgresql+asyncpg://{user}:{password}@{host}/{dbname}")
+    def __init__(self, user, password, host, dbname, port):
+        self.engine = create_async_engine(f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{dbname}")
         self.Session = sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
 
     async def initialize(self):
@@ -63,6 +64,6 @@ class DatabaseManager:
             return
 
 async def insert_match(match_id):
-    db_manager = DatabaseManager(DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
+    db_manager = DatabaseManager(DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT)
     await db_manager.initialize()
     await db_manager.insert_file_data(match_id)

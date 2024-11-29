@@ -69,7 +69,10 @@ async def insert_matches(request: Request):
     data = await request.json()
     match_ids = data.get('match_ids')
     if match_ids and len(match_ids) > 0:
-        await asyncio.gather(*(db_service.insert_match(match_id) for match_id in match_ids))
+        batch_size = 10
+        for i in range(0, len(match_ids), batch_size):
+            batch = match_ids[i:i + batch_size]
+            await asyncio.gather(*(db_service.insert_match(match_id) for match_id in batch))
         return {"status": "ok"}
     else:
         return {"error": "No match_ids provided"}
