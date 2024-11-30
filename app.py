@@ -1,81 +1,58 @@
-import asyncio
-import uvicorn
-from fastapi import FastAPI, Request
-from qstash import QStash
-import os
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException
 
-import db_service
-import file_service
+from services.db.manager import DatabaseService
+from services.file.manager import FileService
+import config
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await db_service.initialize()
+    yield
 
-# Initialize Qstash client
-qstash_client = QStash(os.getenv("QSTASH_TOKEN"))
+app = FastAPI(lifespan=lifespan)
 
-BASE_URL = os.getenv("BASE_URL")
+db_service = DatabaseService(
+    user=config.DB_USER,
+    password=config.DB_PASSWORD,
+    host=config.DB_HOST,
+    dbname=config.DB_NAME,
+    port=config.DB_PORT
+)
+file_service = FileService(db_service)
 
 @app.get("/")
 async def root():
+    total_matches = await db_service.get_total_matches()
     return {
-        "status": 200,
-        "total_matches": 0
+        "status": "ok",
+        "total_matches": total_matches
     }
 
-@app.post("/extract-files")
-async def extract_files(request: Request):
+@app.post("/add-matches")
+async def add_matches(request: Request):
     try:
         data = await request.json()
         url = data.get('url')
-    except Exception as e:
-        return {"error": str(e)}
-    if url:
-        match_ids = await file_service.extract_files(url)
+        if not url:
+            raise HTTPException(status_code=400, detail="No URL provided")
 
-        print(f'{BASE_URL}/insert-matches')
-
-        try:
-            qstash_client.message.enqueue_json(
-                queue='processing_queue',
-                url=f'{BASE_URL}/insert-matches',
-                body={
-                    'match_ids': match_ids
-                }
-            )
-        except Exception as e:
-            return {"error": str(e)}
+        match_ids = await file_service.process_matches_url(url)
+        if not match_ids:
+            raise HTTPException(status_code=400, detail="No matches found or error processing matches")
 
         return {
             "status": "ok",
-            "total_matches": len(match_ids)
+            "total_matches_processed": len(match_ids)
         }
-    else:
-        return {"error": "No URL provided"}
 
-@app.post("/insert-match")
-async def insert_match(request: Request):
-    try:
-        data = await request.json()
-        match_id = data.get('match_id')
     except Exception as e:
-        return {"error": str(e)}
-    if match_id:
-        await db_service.insert_match(match_id)
-        return {"status": "ok"}
-    else:
-        return {"error": "No match_id provided"}
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/insert-matches")
-async def insert_matches(request: Request):
-    data = await request.json()
-    match_ids = data.get('match_ids')
-    if match_ids and len(match_ids) > 0:
-        batch_size = 10
-        for i in range(0, len(match_ids), batch_size):
-            batch = match_ids[i:i + batch_size]
-            await asyncio.gather(*(db_service.insert_match(match_id) for match_id in batch))
-        return {"status": "ok"}
-    else:
-        return {"error": "No match_ids provided"}
+@app.get("/match/count")
+async def get_total_matches():
+    return await db_service.get_total_matches()
 
-if __name__ == "__main__":
-    uvicorn.run(app)
+@app.get("/match/{match_id}")
+async def get_match_by_id(match_id: int):
+    return await db_service.get_match_by_id(match_id)
