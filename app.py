@@ -51,8 +51,20 @@ async def add_matches(request: Request):
 
 @app.get("/matches/count")
 async def get_total_matches():
-    return await db_service.get_total_matches()
+    matches_count = await db_service.get_total_matches()
+    return {
+        "status": "ok",
+        "data": {
+            "total_matches": matches_count
+        }
+    }
 
 @app.get("/matches/{match_id}")
 async def get_match_by_id(match_id: int):
-    return await db_service.get_match_by_id(match_id)
+    match = await db_service.get_match_by_id(match_id)
+    return {
+        "status": "ok",
+        "data": {
+            "match": match
+        }
+    }f
