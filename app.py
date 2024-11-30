@@ -67,4 +67,4 @@ async def get_match_by_id(match_id: int):
         "data": {
             "match": match
         }
-    }f
+    }
