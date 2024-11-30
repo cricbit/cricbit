@@ -29,7 +29,7 @@ async def root():
         "total_matches": total_matches
     }
 
-@app.post("/add-matches")
+@app.post("/matches/insert")
 async def add_matches(request: Request):
     try:
         data = await request.json()
@@ -49,10 +49,10 @@ async def add_matches(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/match/count")
+@app.get("/matches/count")
 async def get_total_matches():
     return await db_service.get_total_matches()
 
-@app.get("/match/{match_id}")
+@app.get("/matches/{match_id}")
 async def get_match_by_id(match_id: int):
     return await db_service.get_match_by_id(match_id)
