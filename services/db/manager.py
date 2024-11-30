@@ -17,7 +17,7 @@ class DatabaseService:
     def __init__(self, user=None, password=None, host=None, dbname=None, port=None):
         if not hasattr(self, 'engine'):
             connection_string = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{dbname}?statement_cache_size=0"
-            self.engine = create_async_engine(connection_string)
+            self.engine = create_async_engine(connection_string, connect_args={"statement_cache_size": 0})
             self.Session = sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
 
     @asynccontextmanager
