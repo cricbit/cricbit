@@ -86,3 +86,10 @@ async def insert_match(match_id: int, request: Request):
        }
    except Exception as e:
        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/db/initialize")
+async def initialize_db():
+    await db_service.initialize()
+    return {
+        "status": "ok"
+    }
