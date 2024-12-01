@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, JSON, String, ForeignKey
 from domains.base import Base
 
-class MatchDetails(Base):
-    __tablename__ = 'match_details'
+class Match(Base):
+    __tablename__ = 'stg_matches'
     __license__ = """
     This data is provided under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) license.
 

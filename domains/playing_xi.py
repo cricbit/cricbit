@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from domains.base import Base
 
 class PlayingXI(Base):
-    __tablename__ = 'playing_xi'
+    __tablename__ = 'stg_playing_xi'
     __license__ = """
     This data is provided under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) license.
 
@@ -19,7 +19,7 @@ class PlayingXI(Base):
       your contributions under the same license as the original.
     """
 
-    match_id = Column(Integer, ForeignKey('match_details.match_id'), primary_key=True)
+    match_id = Column(Integer, ForeignKey('stg_matches.match_id'), primary_key=True)
     player_id = Column(String, primary_key=True)
     player_name = Column(String)
     team_name = Column(String)
