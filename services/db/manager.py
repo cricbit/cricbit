@@ -30,7 +30,8 @@ class DatabaseService:
                         "idle_in_transaction_session_timeout": "0"
                     }
                 },
-                pool_pre_ping=True
+                pool_pre_ping=True,
+                execution_options={"prepare": False}
             )
             self.Session = sessionmaker(
                 self.engine,
@@ -41,6 +42,7 @@ class DatabaseService:
     @asynccontextmanager
     async def async_session_scope(self):
         async with self.Session() as session:
+            session.sync_session.execution_options(prepare=False)
             try:
                 yield session
                 await session.commit()
