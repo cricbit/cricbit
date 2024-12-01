@@ -32,8 +32,8 @@ async def root():
 @app.post("/matches/insert")
 async def add_matches(request: Request):
     try:
-        data = await request.json()
-        url = data.get('url')
+        body = await request.json()
+        url = body.get('url')
         if not url:
             raise HTTPException(status_code=400, detail="No URL provided")
 
@@ -68,3 +68,21 @@ async def get_match_by_id(match_id: int):
             "match": match
         }
     }
+
+@app.post("/matches/{match_id}")
+async def insert_match(match_id: int, request: Request):
+   try:
+       body = await request.json()
+       match_data = body.get('match_data')
+       if not match_data:
+           raise HTTPException(status_code=400, detail="No match data provided")
+
+       await db_service.insert_match(match_id, match_data)
+       return {
+           "status": "ok",
+           "data": {
+               "match_id": match_id
+           }
+       }
+   except Exception as e:
+       raise HTTPException(status_code=500, detail=str(e))
