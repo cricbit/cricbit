@@ -8,7 +8,7 @@ class Delivery(Base):
     __tablename__ = 'stg_deliveries'
 
     # Composite primary key fields
-    match_id = Column(Integer, ForeignKey('stg_matches.match_id'), primary_key=True)
+    match_id = Column(Integer, ForeignKey('raw_matches.match_id'), primary_key=True)
     inning = Column(Integer, primary_key=True)
     over = Column(String, primary_key=True)
     ball = Column(Integer, primary_key=True)

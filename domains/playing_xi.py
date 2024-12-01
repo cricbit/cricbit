@@ -19,7 +19,7 @@ class PlayingXI(Base):
       your contributions under the same license as the original.
     """
 
-    match_id = Column(Integer, ForeignKey('stg_matches.match_id'), primary_key=True)
+    match_id = Column(Integer, ForeignKey('raw_matches.match_id'), primary_key=True)
     player_id = Column(String, primary_key=True)
     player_name = Column(String)
     team_name = Column(String)
