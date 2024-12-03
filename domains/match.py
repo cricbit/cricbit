@@ -24,7 +24,6 @@ class Match(Base):
     series_name = Column(String)
     match_num = Column(Integer)
     match_stage = Column(String)
-    match_type = Column(String)
     match_type_num = Column(Integer)
     team_type = Column(String)
     format = Column(String)
