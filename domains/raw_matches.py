@@ -23,10 +23,15 @@ class RawMatch(Base):
     For more details, please visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
     """
 
+    __table_args__ = {
+        'postgresql_partition_by': 'RANGE (created_at)',
+        'info': {'sort_order': ('created_at', 'desc')}
+    }
+
     match_id = Column(Integer, primary_key=True)
     match_data = Column(JSONB)
     deliveries = Column(JSONB)
-    created_at = Column(DateTime, default=lambda: datetime.now())
+    created_at = Column(DateTime, default=lambda: datetime.now(), index=True)
 
     def __init__(self, match_id, match_data, deliveries):
         self.match_id = match_id
