@@ -6,9 +6,6 @@ from sqlalchemy.orm import sessionmaker
 
 from domains.base import Base
 from domains.raw_matches import RawMatch
-from domains.match import Match
-from domains.playing_xi import PlayingXI
-from domains.delivery import Delivery
 class DatabaseService:
     _instance = None
 
@@ -80,10 +77,10 @@ class DatabaseService:
 
     async def get_total_matches(self) -> int:
         async with self.async_session_scope() as session:
-            result = await session.execute(select(func.count()).select_from(Match))
+            result = await session.execute(select(func.count()).select_from(RawMatch))
             return result.scalar_one()
 
-    async def get_match_by_id(self, match_id: int) -> Match:
+    async def get_match_by_id(self, match_id: int) -> RawMatch:
         async with self.async_session_scope() as session:
-            result = await session.execute(select(Match).where(Match.match_id == match_id))
+            result = await session.execute(select(RawMatch).where(RawMatch.match_id == match_id))
             return result.scalar_one_or_none()
