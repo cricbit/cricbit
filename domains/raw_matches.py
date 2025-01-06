@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
-from datetime import datetime
+from datetime import datetime, timezone
 
 from domains.base import Base
 
@@ -24,14 +24,13 @@ class RawMatch(Base):
     """
 
     __table_args__ = {
-        'postgresql_partition_by': 'RANGE (created_at)',
         'info': {'sort_order': ('created_at', 'desc')}
     }
 
     match_id = Column(Integer, primary_key=True)
     match_data = Column(JSONB)
     deliveries = Column(JSONB)
-    created_at = Column(DateTime, default=lambda: datetime.now(), primary_key=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __init__(self, match_id, match_data, deliveries):
         self.match_id = match_id
