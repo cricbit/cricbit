@@ -30,7 +30,7 @@ class RawMatch(Base):
     match_id = Column(Integer, primary_key=True)
     match_data = Column(JSONB)
     deliveries = Column(JSONB)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.now())
 
     def __init__(self, match_id, match_data, deliveries):
         self.match_id = match_id
