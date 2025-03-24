@@ -87,6 +87,21 @@ async def insert_match(match_id: int, request: Request):
    except Exception as e:
        raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/players")
+async def update_players(request: Request):
+    body = await request.json()
+    url = body.get('url')
+    if not url:
+        raise HTTPException(status_code=400, detail="No URL provided")
+
+    await file_service.process_players_url(url)
+    return {
+        "status": "ok",
+        "data": {
+            "players_count": await db_service.get_players_count()
+        }
+    }
+
 @app.post("/db/initialize")
 async def initialize_db():
     await db_service.initialize()

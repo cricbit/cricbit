@@ -1,3 +1,5 @@
+import pandas as pd
+
 from contextlib import asynccontextmanager
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -6,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 
 from domains.base import Base
 from domains.raw_matches import RawMatch
+from domains.raw_players import RawPlayer
+
 class DatabaseService:
     _instance = None
 
@@ -28,6 +32,9 @@ class DatabaseService:
                     }
                 },
                 pool_pre_ping=True,
+                pool_size=20,
+                max_overflow=30,
+                pool_timeout=60,
                 execution_options={"prepare": False}
             )
             self.Session = sessionmaker(
@@ -84,3 +91,31 @@ class DatabaseService:
         async with self.async_session_scope() as session:
             result = await session.execute(select(RawMatch).where(RawMatch.match_id == match_id))
             return result.scalar_one_or_none()
+
+    async def add_player(self, player_id: int, player_data: pd.Series) -> bool:
+        async with self.async_session_scope() as session:
+            try:
+                # Check if player already exists
+                existing_player = await session.execute(
+                    select(RawPlayer).where(RawPlayer.player_id == player_id)
+                )
+                if existing_player.scalar_one_or_none():
+                    return True  # Player exists, skip
+
+                if not pd.isna(player_data.get('key_cricinfo')):
+                    player = RawPlayer(
+                        player_id=player_id,
+                        name=player_data.get('name'),
+                        cricinfo_id=player_data.get('key_cricinfo'),
+                    )
+                    session.add(player)
+                    await session.flush()
+                    return True
+            except Exception as e:
+                print(f"Error processing player {player_id}: {e}")
+                return False
+
+    async def get_players_count(self) -> int:
+        async with self.async_session_scope() as session:
+            result = await session.execute(select(func.count()).select_from(RawPlayer))
+            return result.scalar_one()
