@@ -24,25 +24,35 @@ class FileService:
             print(f"Error processing matches: {e}")
             return None
 
-    async def process_players_url(self, url: str) -> Optional[List[int]]:
+    async def process_players_url(self) -> Optional[List[int]]:
         try:
-            response = requests.get(url)
-            response.raise_for_status()
+            players_url = "https://www.cricsheet.org/register/people.csv"
+            names_url = "https://www.cricsheet.org/register/names.csv"
+
+            players_response = requests.get(players_url)
+            names_response = requests.get(names_url)
+
+            players_response.raise_for_status()
+            names_response.raise_for_status()
             
             # Read CSV data into pandas DataFrame
-            df = pd.read_csv(io.StringIO(response.text))
+            players_df = pd.read_csv(io.StringIO(players_response.text))
+            names_df = pd.read_csv(io.StringIO(names_response.text))
+
+            players_df = players_df.merge(names_df, on='identifier', how='left', suffixes=('', '_complete'))
+
             players_count = await self.db_manager.get_players_count()
 
-            if players_count == len(df):
+            if players_count == len(players_df):
                 print("No new players to process")
                 return None
 
-            print(f"Starting to process {len(df)} players")
+            print(f"Starting to process {len(players_df)} players")
             # Process players in smaller batches of 20
             batch_size = 20
             total_processed = 0
-            for i in range(0, len(df), batch_size):
-                batch = df.iloc[i:i + batch_size]
+            for i in range(0, len(players_df), batch_size):
+                batch = players_df.iloc[i:i + batch_size]
                 tasks = []
                 for _, row in batch.iterrows():
                     try:
@@ -59,7 +69,7 @@ class FileService:
                     print(f"Total processed: {total_processed} players")
                     
                     # Add a small delay between batches to prevent overwhelming the database
-                    if i + batch_size < len(df):
+                    if i + batch_size < len(players_df):
                         await asyncio.sleep(0.5)
 
             print(f"Finished processing players. Total added: {total_processed}")

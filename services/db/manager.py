@@ -105,7 +105,7 @@ class DatabaseService:
                 if not pd.isna(player_data.get('key_cricinfo')):
                     player = RawPlayer(
                         player_id=player_id,
-                        name=player_data.get('name'),
+                        name=player_data.get('name_complete') if not pd.isna(player_data.get('name_complete')) else player_data.get('name'),
                         cricinfo_id=player_data.get('key_cricinfo'),
                     )
                     session.add(player)
@@ -119,3 +119,8 @@ class DatabaseService:
         async with self.async_session_scope() as session:
             result = await session.execute(select(func.count()).select_from(RawPlayer))
             return result.scalar_one()
+        
+    async def get_player_by_id(self, player_id: int) -> RawPlayer:
+        async with self.async_session_scope() as session:
+            result = await session.execute(select(RawPlayer).where(RawPlayer.player_id == player_id))
+            return result.scalar_one_or_none()

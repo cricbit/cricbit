@@ -3,6 +3,8 @@ from fastapi import FastAPI, Request, HTTPException
 
 from services.db.manager import DatabaseService
 from services.file.manager import FileService
+from services.web.scraper import ScraperService
+
 import config
 
 @asynccontextmanager
@@ -20,6 +22,7 @@ db_service = DatabaseService(
     port=config.DB_PORT
 )
 file_service = FileService(db_service)
+scraper_service = ScraperService(db_service)
 
 @app.get("/")
 async def root():
@@ -88,17 +91,38 @@ async def insert_match(match_id: int, request: Request):
        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/players")
-async def update_players(request: Request):
-    body = await request.json()
-    url = body.get('url')
-    if not url:
-        raise HTTPException(status_code=400, detail="No URL provided")
-
-    await file_service.process_players_url(url)
+async def update_players():
+    await file_service.process_players_url()
     return {
         "status": "ok",
         "data": {
             "players_count": await db_service.get_players_count()
+        }
+    }
+
+@app.get("/player/{player_id}")
+async def get_player_by_id(player_id: str):
+    player = await db_service.get_player_by_id(player_id)
+    return {
+        "status": "ok",
+        "data": {
+            "player": player
+        }
+    }
+
+@app.put("/player/{player_id}")
+async def update_player(player_id: str):
+    player = await db_service.get_player_by_id(player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")    
+
+    scraped_player_info = await scraper_service.scrape_player_data(player)
+
+    return {
+        "status": "ok",
+        "data": {
+            "player_id": player_id,
+            "scraped_player_info": scraped_player_info
         }
     }
 
