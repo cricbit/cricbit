@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request, HTTPException
 
 from services.db.manager import DatabaseService
 from services.file.manager import FileService
-from services.web.scraper import ScraperService
+# from services.web.scraper import ScraperService
 
 import config
 
@@ -22,7 +22,7 @@ db_service = DatabaseService(
     port=config.DB_PORT
 )
 file_service = FileService(db_service)
-scraper_service = ScraperService(db_service)
+# scraper_service = ScraperService(db_service)
 
 @app.get("/")
 async def root():
@@ -110,21 +110,21 @@ async def get_player_by_id(player_id: str):
         }
     }
 
-@app.put("/player/{player_id}")
-async def update_player(player_id: str):
-    player = await db_service.get_player_by_id(player_id)
-    if not player:
-        raise HTTPException(status_code=404, detail="Player not found")    
+# @app.put("/player/{player_id}")
+# async def update_player(player_id: str):
+#     player = await db_service.get_player_by_id(player_id)
+#     if not player:
+#         raise HTTPException(status_code=404, detail="Player not found")    
 
-    scraped_player_info = await scraper_service.scrape_player_data(player)
+#     scraped_player_info = await scraper_service.scrape_player_data(player)
 
-    return {
-        "status": "ok",
-        "data": {
-            "player_id": player_id,
-            "scraped_player_info": scraped_player_info
-        }
-    }
+#     return {
+#         "status": "ok",
+#         "data": {
+#             "player_id": player_id,
+#             "scraped_player_info": scraped_player_info
+#         }
+#     }
 
 @app.post("/db/initialize")
 async def initialize_db():
