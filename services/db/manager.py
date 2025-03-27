@@ -8,7 +8,6 @@ from sqlalchemy.orm import sessionmaker
 
 from domains.base import Base
 from domains.raw_matches import RawMatch
-from domains.raw_players import RawPlayer
 from domains.player_info import PlayerInfo
 
 class DatabaseService:
@@ -93,43 +92,19 @@ class DatabaseService:
             result = await session.execute(select(RawMatch).where(RawMatch.match_id == match_id))
             return result.scalar_one_or_none()
 
-    async def add_player(self, player_id: int, player_data: pd.Series) -> bool:
-        async with self.async_session_scope() as session:
-            try:
-                # Check if player already exists
-                existing_player = await session.execute(
-                    select(RawPlayer).where(RawPlayer.player_id == player_id)
-                )
-                if existing_player.scalar_one_or_none():
-                    return True  # Player exists, skip
-
-                if not pd.isna(player_data.get('key_cricinfo')):
-                    player = RawPlayer(
-                        player_id=player_id,
-                        name=player_data.get('name_complete') if not pd.isna(player_data.get('name_complete')) else player_data.get('name'),
-                        cricinfo_id=player_data.get('key_cricinfo'),
-                    )
-                    session.add(player)
-                    await session.flush()
-                    return True
-            except Exception as e:
-                print(f"Error processing player {player_id}: {e}")
-                return False
-
     async def get_players_count(self) -> int:
         async with self.async_session_scope() as session:
-            result = await session.execute(select(func.count()).select_from(RawPlayer))
+            result = await session.execute(select(func.count()).select_from(PlayerInfo))
             return result.scalar_one()
         
-    async def get_player_by_id(self, player_id: int) -> RawPlayer:
+    async def get_player_by_id(self, player_id: int) -> PlayerInfo:
         async with self.async_session_scope() as session:
-            result = await session.execute(select(RawPlayer).where(RawPlayer.player_id == player_id))
+            result = await session.execute(select(PlayerInfo).where(PlayerInfo.player_id == player_id))
             return result.scalar_one_or_none()
         
-    async def upsert_player(self, player_id: int, player_data: dict) -> bool:
+    async def add_player(self, player_id: int, player_data: dict) -> bool:
         async with self.async_session_scope() as session:
             try:
-                # Get existing player
                 result = await session.execute(
                     select(PlayerInfo).where(PlayerInfo.player_id == player_id)
                 )

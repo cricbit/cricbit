@@ -1,16 +1,14 @@
 from typing import Optional, Dict
 import requests
 
-from domains.raw_players import RawPlayer
+from domains.player_info import PlayerInfo
 
 class ScraperService:
     def __init__(self, db_manager):
         self.db_manager = db_manager
         self.url = "http://core.espnuk.org/v2/sports/cricket/athletes/"
 
-    async def scrape_player_data(self, player: RawPlayer) -> Optional[Dict]:
-        player_id = player.player_id
-        cricinfo_id = player.cricinfo_id
+    async def scrape_player_data(self, player_id: str, cricinfo_id: int) -> Optional[Dict]:
         try:
             response = requests.get(self.url + str(cricinfo_id))
 
