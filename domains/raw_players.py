@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Integer
+from sqlalchemy import Column, String, Integer
 from domains.base import Base
 
 class RawPlayer(Base):

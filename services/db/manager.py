@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from domains.base import Base
 from domains.raw_matches import RawMatch
 from domains.raw_players import RawPlayer
+from domains.player_info import PlayerInfo
 
 class DatabaseService:
     _instance = None
@@ -124,3 +125,30 @@ class DatabaseService:
         async with self.async_session_scope() as session:
             result = await session.execute(select(RawPlayer).where(RawPlayer.player_id == player_id))
             return result.scalar_one_or_none()
+        
+    async def upsert_player(self, player_id: int, player_data: dict) -> bool:
+        async with self.async_session_scope() as session:
+            try:
+                # Get existing player
+                result = await session.execute(
+                    select(PlayerInfo).where(PlayerInfo.player_id == player_id)
+                )
+                existing_player = result.scalar_one_or_none()
+
+                if existing_player:
+                    # Update existing player
+                    for key, value in player_data.items():
+                        if hasattr(existing_player, key):
+                            setattr(existing_player, key, value)
+                    await session.flush()
+                    return True
+                else:
+                    # Create new player
+                    player_data['player_id'] = str(player_id)  # Ensure player_id is set
+                    player = PlayerInfo.from_dict(player_data)
+                    session.add(player)
+                    await session.flush()
+                    return True
+            except Exception as e:
+                print(f"Error upserting player {player_id}: {e}")
+                return False

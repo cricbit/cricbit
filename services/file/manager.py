@@ -47,7 +47,6 @@ class FileService:
                 print("No new players to process")
                 return None
 
-            print(f"Starting to process {len(players_df)} players")
             # Process players in smaller batches of 20
             batch_size = 20
             total_processed = 0
