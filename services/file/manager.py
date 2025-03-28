@@ -51,12 +51,16 @@ class FileService:
                 tasks = []
                 for _, row in batch.iterrows():
                     identifier = row['identifier']
-                    key_cricinfo = int(row['key_cricinfo_2']) or int(row['key_cricinfo'])
+                    key_cricinfo = int(row['key_cricinfo_2']) or int(row['key_cricinfo']) or None
                     
                     async def process_player(identifier=identifier, key_cricinfo=key_cricinfo):
                         try:
-                            player_data = await self.scraper_service.scrape_player_data(identifier, key_cricinfo)
-                            return await self.db_manager.add_player(identifier, player_data)
+                            if key_cricinfo:
+                                player_data = await self.scraper_service.scrape_player_data(identifier, key_cricinfo)
+                                return await self.db_manager.add_player(identifier, player_data)
+                            else:
+                                print(f"No key_cricinfo for player {identifier}")
+                                return False
                         except Exception as e:
                             print(f"Error processing player {identifier}: {e}")
                             return False
