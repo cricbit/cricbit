@@ -27,6 +27,13 @@ class FileService:
             print(f"Error processing matches: {e}")
             return None
 
+    def _get_cricinfo_key(self, row) -> int:
+        """Get the cricinfo key from either key_cricinfo_2 or key_cricinfo."""
+        for key in ['key_cricinfo_2', 'key_cricinfo']:
+            if not pd.isna(row[key]):
+                return int(row[key])
+        return 0
+
     async def process_players_url(self) -> Optional[List[int]]:
         try:
             players_url = "https://www.cricsheet.org/register/people.csv"
@@ -51,10 +58,14 @@ class FileService:
                 tasks = []
                 for _, row in batch.iterrows():
                     identifier = row['identifier']
-                    key_cricinfo = int(row['key_cricinfo_2']) or int(row['key_cricinfo']) or None
+                    key_cricinfo = self._get_cricinfo_key(row)
                     
                     async def process_player(identifier=identifier, key_cricinfo=key_cricinfo):
                         try:
+                            if await self.db_manager.player_exists(identifier):
+                                print(f"Player {identifier} already exists in db")
+                                return False
+
                             if key_cricinfo:
                                 player_data = await self.scraper_service.scrape_player_data(identifier, key_cricinfo)
                                 return await self.db_manager.add_player(identifier, player_data)

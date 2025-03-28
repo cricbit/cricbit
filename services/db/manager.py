@@ -101,29 +101,21 @@ class DatabaseService:
         async with self.async_session_scope() as session:
             result = await session.execute(select(PlayerInfo).where(PlayerInfo.player_id == player_id))
             return result.scalar_one_or_none()
+    
+    async def player_exists(self, player_id: int) -> bool:
+        async with self.async_session_scope() as session:
+            result = await session.execute(select(PlayerInfo).where(PlayerInfo.player_id == player_id))
+            return result.scalar_one_or_none() is not None
         
     async def add_player(self, player_id: str, player_data: dict) -> bool:
         async with self.async_session_scope() as session:
             try:
-                result = await session.execute(
-                    select(PlayerInfo).where(PlayerInfo.player_id == player_id)
-                )
-                existing_player = result.scalar_one_or_none()
-
-                if existing_player:
-                    # Update existing player
-                    for key, value in player_data.items():
-                        if hasattr(existing_player, key):
-                            setattr(existing_player, key, value)
-                    await session.flush()
-                    return True
-                else:
-                    # Create new player
-                    player_data['player_id'] = player_id
-                    player = PlayerInfo(**player_data)
-                    session.add(player)
-                    await session.flush()
-                    return True
+                player_data['player_id'] = player_id
+                player = PlayerInfo(**player_data)
+                session.add(player)
+                await session.flush()
+                print(f"Player {player_id} added successfully.")
+                return True
             except Exception as e:
                 print(f"Error adding player {player_id}: {e}")
                 return False
