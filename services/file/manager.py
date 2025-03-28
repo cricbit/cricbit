@@ -51,7 +51,7 @@ class FileService:
                 tasks = []
                 for _, row in batch.iterrows():
                     identifier = row['identifier']
-                    key_cricinfo = int(row['key_cricinfo'])
+                    key_cricinfo = int(row['key_cricinfo_2']) or int(row['key_cricinfo'])
                     
                     async def process_player(identifier=identifier, key_cricinfo=key_cricinfo):
                         try:

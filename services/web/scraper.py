@@ -17,25 +17,25 @@ class ScraperService:
 
             batting_styles = []
             bowling_styles = []
-            styles = data['styles']
+            styles = data['styles'] or []
             for style in styles:
                 if style['type'] == 'batting':
                     batting_styles.append(style['description'])
                 if style['type'] == 'bowling':
                     bowling_styles.append(style['description'])
 
-            national_team = requests.get(data['team']['$ref']).json()['name']
+            national_team = requests.get(data['team']['$ref']).json()['name'] if data['team'] else None
 
             player_data = {
-                'name': data['name'],
-                'dob': datetime.strptime(data['dateOfBirth'], '%Y-%m-%dT%H:%MZ').date(),
+                'name': data['name'] if data['name'] else None,
+                'dob': datetime.strptime(data['dateOfBirth'], '%Y-%m-%dT%H:%MZ').date() if data['dateOfBirth'] else None,
                 'batting_styles': batting_styles,
                 'bowling_styles': bowling_styles,
-                'playing_role': data['position']['name'],
-                'image_url': data['headshot']['href'],
-                'is_active': data['isActive'],
-                'gender': data['gender'],
-                'national_team': national_team,
+                'playing_role': data['position']['name'] if data['position'] else None,
+                'image_url': data['headshot']['href'] if data['headshot'] else None,
+                'is_active': data['isActive'] if data['isActive'] else None,
+                'gender': data['gender'] if data['gender'] else None,
+                'national_team': national_team if national_team else None,
             }
 
             return player_data
