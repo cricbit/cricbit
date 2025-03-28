@@ -102,7 +102,7 @@ class DatabaseService:
             result = await session.execute(select(PlayerInfo).where(PlayerInfo.player_id == player_id))
             return result.scalar_one_or_none()
         
-    async def add_player(self, player_id: int, player_data: dict) -> bool:
+    async def add_player(self, player_id: str, player_data: dict) -> bool:
         async with self.async_session_scope() as session:
             try:
                 result = await session.execute(
@@ -119,11 +119,11 @@ class DatabaseService:
                     return True
                 else:
                     # Create new player
-                    player_data['player_id'] = str(player_id)  # Ensure player_id is set
-                    player = PlayerInfo.from_dict(player_data)
+                    player_data['player_id'] = player_id
+                    player = PlayerInfo(**player_data)
                     session.add(player)
                     await session.flush()
                     return True
             except Exception as e:
-                print(f"Error upserting player {player_id}: {e}")
+                print(f"Error adding player {player_id}: {e}")
                 return False

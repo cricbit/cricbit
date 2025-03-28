@@ -32,7 +32,6 @@ class FileService:
             players_url = "https://www.cricsheet.org/register/people.csv"
 
             players_response = requests.get(players_url)
-
             players_response.raise_for_status()
             
             # Read CSV data into pandas DataFrame
@@ -51,12 +50,15 @@ class FileService:
                 batch = players_df.iloc[i:i + batch_size]
                 tasks = []
                 for _, row in batch.iterrows():
-                    async def process_player():
+                    identifier = row['identifier']
+                    key_cricinfo = int(row['key_cricinfo'])
+                    
+                    async def process_player(identifier=identifier, key_cricinfo=key_cricinfo):
                         try:
-                            player_data = await self.scraper_service.scrape_player_data(row['identifier'], int(row['key_cricinfo']))
-                            return await self.db_manager.add_player(row['identifier'], player_data)
+                            player_data = await self.scraper_service.scrape_player_data(identifier, key_cricinfo)
+                            return await self.db_manager.add_player(identifier, player_data)
                         except Exception as e:
-                            print(f"Error processing player {row['identifier']}: {e}")
+                            print(f"Error processing player {identifier}: {e}")
                             return False
 
                     tasks.append(process_player())

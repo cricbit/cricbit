@@ -1,5 +1,6 @@
 from typing import Optional, Dict
 import requests
+from datetime import datetime
 
 from domains.player_info import PlayerInfo
 
@@ -27,7 +28,7 @@ class ScraperService:
 
             player_data = {
                 'name': data['name'],
-                'dob': data['dateOfBirth'],
+                'dob': datetime.strptime(data['dateOfBirth'], '%Y-%m-%dT%H:%MZ').date(),
                 'batting_styles': batting_styles,
                 'bowling_styles': bowling_styles,
                 'playing_role': data['position']['name'],
@@ -36,8 +37,6 @@ class ScraperService:
                 'gender': data['gender'],
                 'national_team': national_team,
             }
-
-            await self.db_manager.upsert_player(player_id, player_data)
 
             return player_data
         except Exception as e:

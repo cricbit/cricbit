@@ -52,7 +52,7 @@ async def add_matches(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/matches/count")
+@app.get("/match/count")
 async def get_total_matches():
     matches_count = await db_service.get_total_matches()
     return {
@@ -62,7 +62,7 @@ async def get_total_matches():
         }
     }
 
-@app.get("/matches/{match_id}")
+@app.get("/match/{match_id}")
 async def get_match_by_id(match_id: int):
     match = await db_service.get_match_by_id(match_id)
     return {
@@ -72,7 +72,7 @@ async def get_match_by_id(match_id: int):
         }
     }
 
-@app.post("/matches/{match_id}")
+@app.post("/match/{match_id}")
 async def insert_match(match_id: int, request: Request):
    try:
        body = await request.json()
@@ -91,14 +91,14 @@ async def insert_match(match_id: int, request: Request):
        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/players")
-async def update_players():
+async def add_players():
     await file_service.process_players_url()
     return {
         "status": "ok",
         "data": {
-            "players_count": await db_service.get_players_count()
-        }
-    }
+                "players_count": await db_service.get_players_count()
+            }
+    }   
 
 @app.get("/player/{player_id}")
 async def get_player_by_id(player_id: str):
