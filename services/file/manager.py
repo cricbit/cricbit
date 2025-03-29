@@ -63,16 +63,16 @@ class FileService:
                 tasks = []
                 for _, row in batch.iterrows():
                     identifier = row['identifier']
-                    key_cricinfo = self._get_cricinfo_key(row)
+                    keys_cricinfo = self._get_cricinfo_keys(row)
                     
-                    async def process_player(identifier=identifier, key_cricinfo=key_cricinfo):
+                    async def process_player(identifier=identifier, keys_cricinfo=keys_cricinfo):
                         try:
                             if await self.db_manager.player_exists(identifier):
                                 print(f"Player {identifier} already exists in db")
                                 return False
 
-                            if key_cricinfo:
-                                for key in key_cricinfo:
+                            if keys_cricinfo:
+                                for key in keys_cricinfo:
                                     player_data = await self.scraper_service.scrape_player_data(identifier, key)
                                     if player_data:
                                         return await self.db_manager.add_player(identifier, player_data)
