@@ -2,8 +2,6 @@ from typing import Optional, Dict
 import requests
 from datetime import datetime
 
-from domains.player_info import PlayerInfo
-
 class ScraperService:
     def __init__(self, db_manager):
         self.db_manager = db_manager
@@ -14,6 +12,9 @@ class ScraperService:
             response = requests.get(self.url + str(cricinfo_id))
 
             data = response.json()
+
+            if not data:
+                return None
 
             batting_styles = []
             bowling_styles = []

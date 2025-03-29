@@ -112,11 +112,18 @@ async def get_player_by_id(player_id: str):
 
 @app.put("/player/{player_id}")
 async def update_player(player_id: str):
-    player = await db_service.get_player_by_id(player_id)
-    if not player:
+    players_df = await file_service.get_players_df()
+    player = players_df[players_df['identifier'] == player_id]
+
+    if player.empty:
         raise HTTPException(status_code=404, detail="Player not found")    
 
-    data = await scraper_service.scrape_player_data(player)
+    cricinfo_keys = file_service._get_cricinfo_keys(player.iloc[0])
+
+    for cricinfo_key in cricinfo_keys:
+        data = await scraper_service.scrape_player_data(player_id, cricinfo_key)
+        if data:
+            break
 
     return {
         "status": "ok",

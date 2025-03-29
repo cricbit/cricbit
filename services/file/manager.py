@@ -27,23 +27,28 @@ class FileService:
             print(f"Error processing matches: {e}")
             return None
 
-    def _get_cricinfo_key(self, row) -> int:
+    def _get_cricinfo_keys(self, row) -> List[int]:
         """Get the cricinfo key from either key_cricinfo_2 or key_cricinfo."""
-        for key in ['key_cricinfo_2', 'key_cricinfo']:
+        cricinfo_keys = []
+        for key in ['key_cricinfo_3','key_cricinfo_2','key_cricinfo']:
             if not pd.isna(row[key]):
-                return int(row[key])
-        return 0
+                cricinfo_keys.append(int(row[key]))
+        return cricinfo_keys
+    
+    async def get_players_df(self) -> pd.DataFrame:
+        players_url = "https://www.cricsheet.org/register/people.csv"
+
+        players_response = requests.get(players_url)
+        players_response.raise_for_status()
+        
+        # Read CSV data into pandas DataFrame
+        players_df = pd.read_csv(io.StringIO(players_response.text))
+
+        return players_df
 
     async def process_players_url(self) -> Optional[List[int]]:
         try:
-            players_url = "https://www.cricsheet.org/register/people.csv"
-
-            players_response = requests.get(players_url)
-            players_response.raise_for_status()
-            
-            # Read CSV data into pandas DataFrame
-            players_df = pd.read_csv(io.StringIO(players_response.text))
-
+            players_df = await self.get_players_df()
             players_count = await self.db_manager.get_players_count()
 
             if players_count == len(players_df):
@@ -67,8 +72,10 @@ class FileService:
                                 return False
 
                             if key_cricinfo:
-                                player_data = await self.scraper_service.scrape_player_data(identifier, key_cricinfo)
-                                return await self.db_manager.add_player(identifier, player_data)
+                                for key in key_cricinfo:
+                                    player_data = await self.scraper_service.scrape_player_data(identifier, key)
+                                    if player_data:
+                                        return await self.db_manager.add_player(identifier, player_data)
                             else:
                                 print(f"No key_cricinfo for player {identifier}")
                                 return False
